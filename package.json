@@ -1,11 +1,12 @@
 {
+  "type": "module",
   "name": "ucdp_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,13 @@
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "pg": "^8.16.3"
-  }
+    "pg": "^8.16.3",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+        "nodemon": "^3.0.3"
+    }
 }
