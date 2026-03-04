@@ -8,5 +8,6 @@ const router = express.Router();
 router.post("/test", findByEmail);
 router.post("/register", registerValidator,validate,register);
 router.post("/login", loginValidator,validate, login);
+router.put("/update", registerValidator,validate, register);
 
 export default router;

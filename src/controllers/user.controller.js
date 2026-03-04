@@ -2,10 +2,10 @@ import User from "../models/Users.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-export const findByEmail = async (req, res) => {
-  const { email } = req.body;
+export const findById = async (req, res) => {
+  const { id_utilisateur } = req.body;
   try {
-    const user = await User.findByEmail(email);
+    const user = await User.findById(id_utilisateur);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur inexistant" });
     }
@@ -109,4 +109,40 @@ export const login = async (req, res) => {
       id: user.id_utilisateur,
     },
   });
+};
+
+export const updateUser = async (req, res) => {
+  const {
+    nom,
+    prenom,
+    email,
+    password,
+    telephone,
+    adresse,
+    code_postal,
+    ville,
+    raison_sociale,
+  } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await User.update({
+      nom,
+      prenom,
+      email,
+      password: hashedPassword,
+      telephone,
+      adresse,
+      code_postal,
+      ville,
+      raison_sociale,
+    });
+    res.json({
+      message: "Utilisateur mis à jour avec succès",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("UPDATE ERROR:", error);
+    res.status(500).json({ message: "Erreur du serveur" });
+  }
 };
