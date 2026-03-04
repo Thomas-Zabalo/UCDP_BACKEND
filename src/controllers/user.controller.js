@@ -63,21 +63,14 @@ export const register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    console.log("NOUVEL UTILISATEUR:", newUser);
+
 
     return res.status(201).json({
       message: "Utilisateur créé avec succès",
       token,
       user: {
-        id: newUser.id,
-        nom: newUser.nom,
-        prenom: newUser.prenom,
-        email: newUser.mail,
-        telephone: newUser.telephone,
-        adresse: newUser.adresse,
-        code_postal: newUser.code_postal,
-        ville: newUser.ville,
-        raison_sociale: newUser.raison_sociale,
+        id: newUser.id_utilisateur,
+        email: newUser.mail
       },
     });
   } catch (error) {
@@ -113,8 +106,7 @@ export const login = async (req, res) => {
   res.json({
     token,
     user: {
-      id: user.id,
-      email: user.email,
+      id: user.id_utilisateur,
     },
   });
 };
