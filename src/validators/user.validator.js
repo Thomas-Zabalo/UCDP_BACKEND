@@ -1,11 +1,6 @@
 import { body } from "express-validator";
 
 export const registerValidator = [
-    body("username")
-        .trim()
-        .notEmpty().withMessage("Username requis")
-        .isLength({ min: 3 }).withMessage("Username trop court"),
-
     body("email")
         .trim()
         .notEmpty().withMessage("Email requis")
