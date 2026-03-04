@@ -17,7 +17,12 @@ export const registerValidator = [
         .matches(/[a-z]/).withMessage("1 minuscule requise")
         .matches(/[A-Z]/).withMessage("1 majuscule requise")
         .matches(/\d/).withMessage("1 chiffre requis")
-        .matches(/[^A-Za-z0-9]/).withMessage("1 caractère spécial requis")
+        .matches(/[^A-Za-z0-9]/).withMessage("1 caractère spécial requis"),
+    
+    body("telephone")
+        .trim()
+        .notEmpty().withMessage("Téléphone requis")
+        .matches(/^\d{10}$/).withMessage("Téléphone invalide")
 ];
 
 export const loginValidator = [
