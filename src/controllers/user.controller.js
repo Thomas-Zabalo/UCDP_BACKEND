@@ -7,7 +7,7 @@ export const findByEmail = async (req, res) => {
   try {
     const user = await User.findByEmail(email);
     if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      return res.status(404).json({ message: "Utilisateur inexistant" });
     }
     res.json(user);
   } catch (error) {
@@ -16,27 +16,30 @@ export const findByEmail = async (req, res) => {
 };
 
 export const register = async (req, res) => {
-  const { nom, prenom, email, password, telephone, adresse, code_postal, ville, raison_sociale } = req.body;
+  const {
+    nom,
+    prenom,
+    email,
+    password,
+    telephone,
+    adresse,
+    code_postal,
+    ville,
+    raison_sociale,
+  } = req.body;
+
   try {
-    // Vérification champs obligatoires
     if (!email || !password) {
-      return res.status(400).json({
-        message: "Email et mot de passe requis",
-      });
+      return res.status(400).json({ message: "Email et mot de passe requis" });
     }
 
-    // Email déjà utilisé
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
-      return res.status(409).json({
-        message: "Email déjà utilisé",
-      });
+      return res.status(409).json({ message: "Information déjà utilisée" });
     }
 
-    // Hash mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Création utilisateur
     const newUser = await User.register({
       nom,
       prenom,
@@ -49,56 +52,42 @@ export const register = async (req, res) => {
       raison_sociale,
     });
 
-    // Vérification JWT_SECRET
     if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET manquant");
       return res.status(500).json({
         message: "Configuration serveur invalide",
       });
     }
 
-    // Génération du token
     const token = jwt.sign(
       { id: newUser.id, email: newUser.mail },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
+    console.log("NOUVEL UTILISATEUR:", newUser);
 
     return res.status(201).json({
+      message: "Utilisateur créé avec succès",
       token,
       user: {
         id: newUser.id,
-        email: newUser.email,
+        nom: newUser.nom,
+        prenom: newUser.prenom,
+        email: newUser.mail,
+        telephone: newUser.telephone,
+        adresse: newUser.adresse,
+        code_postal: newUser.code_postal,
+        ville: newUser.ville,
+        raison_sociale: newUser.raison_sociale,
       },
     });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
 
-    // Erreur PostgreSQL (email unique, etc.)
     if (error.code === "23505") {
-      return res.status(409).json({
-        message: "Email déjà utilisé",
-      });
+      return res.status(409).json({ message: "Information déjà utilisée" });
     }
 
-    // Erreur JWT
-    if (error.name === "JsonWebTokenError") {
-      return res.status(500).json({
-        message: "Erreur lors de la génération du token",
-      });
-    }
-
-    // Erreur bcrypt
-    if (error.message?.includes("bcrypt")) {
-      return res.status(500).json({
-        message: "Erreur lors du chiffrement du mot de passe",
-      });
-    }
-
-    // Erreur inconnue
-    return res.status(500).json({
-      message: "Erreur interne du serveur",
-    });
+    return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
