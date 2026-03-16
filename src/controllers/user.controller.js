@@ -1,6 +1,8 @@
 import User from "../models/Users.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const findById = async (req, res) => {
   const id = req.params.id;

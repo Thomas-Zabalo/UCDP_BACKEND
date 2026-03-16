@@ -1,7 +1,6 @@
 import db from "../config/db.js";
 
 const User = {
-    // utilisateur.model.js
     findById: async (id) => {
         try {
             const result = await db.query(
@@ -10,9 +9,8 @@ const User = {
             );
             return result.rows[0];
         } catch (err) {
-            // C'EST CE LOG QUI VA NOUS DONNER LA RÉPONSE
             console.error("Erreur d'exécution de la requête SQL dans Node:", err);
-            throw err; // On propage pour que le controller reçoive l'erreur
+            throw err; 
         }
     },
 
@@ -46,7 +44,20 @@ const User = {
             [nom, prenom, password, email, telephone, adresse, code_postal, ville, raison_sociale]
         );
         return result.rows[0];
-    }
+    },
+
+    findByEmail: async (email) => {
+        try {
+            const result = await db.query(
+                "SELECT * FROM utilisateur WHERE mail = $1",
+                [email]
+            );
+            return result.rows[0]; // Renvoie l'utilisateur ou undefined
+        } catch (err) {
+            console.error("Erreur findByEmail:", err);
+            throw err;
+        }
+    },
 };
 
 
