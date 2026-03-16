@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 export const findById = async (req, res) => {
-  const { id_utilisateur } = req.body;
+  const id = req.params.id;
   try {
-    const user = await User.findById(id_utilisateur);
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur inexistant" });
     }
