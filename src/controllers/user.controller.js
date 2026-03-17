@@ -107,9 +107,7 @@ export const login = async (req, res) => {
 
   res.json({
     token,
-    user: {
-      id: user.id_utilisateur,
-    },
+    user
   });
 };
 
