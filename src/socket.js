@@ -2,6 +2,12 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import Message from "./models/Message.js";
 
+let ioInstance = null;
+
+export function getIO() {
+  return ioInstance;
+}
+
 export function initSocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
@@ -61,5 +67,6 @@ export function initSocket(httpServer) {
     });
   });
 
+  ioInstance = io;
   return io;
 }

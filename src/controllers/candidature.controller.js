@@ -1,4 +1,6 @@
 import { candidatureModel } from "../models/candidature.js";
+import Message from "../models/Message.js";
+import { getIO } from "../socket.js";
 
 export const postulerOffre = async (req, res) => {
     const { id_offre, id_client } = req.body;
@@ -10,12 +12,21 @@ export const postulerOffre = async (req, res) => {
             return res.status(400).json({ message: "Vous avez déjà postulé à cette mission." });
         }
 
-        // 2. Création
         const nouvelleCandidature = await candidatureModel.create(
             id_prestataire,
             id_offre,
             id_client
         );
+
+        // Envoi automatique d'un message au particulier pour l'avertir
+        const messageAuto = "Bonjour, je viens de postuler à votre annonce. N'hésitez pas à me contacter !";
+        const savedMessage = await Message.save(messageAuto, id_prestataire, id_client);
+
+        // Notification en temps réel via Socket.io
+        const io = getIO();
+        if (io) {
+            io.to(`user_${id_client}`).emit("new_message", savedMessage);
+        }
 
         res.status(201).json({
             message: "Candidature envoyée avec succès !",
