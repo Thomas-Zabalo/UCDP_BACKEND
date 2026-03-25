@@ -39,5 +39,51 @@ export const candidatureModel = {
         `;
         const result = await db.query(query, [id_prestataire]);
         return result.rows;
+    },
+
+    getByClient: async (id_client) => {
+        const query = `
+            SELECT
+                c.id_candidature,
+                c.id_prestataire,
+                c.statut,
+                c.date_postulation,
+                o.id_offre,
+                o.titre,
+                o.prix,
+                o.localisation,
+                u.id_utilisateur AS presta_id,
+                u.prenom AS presta_prenom,
+                u.nom AS presta_nom
+            FROM candidature c
+                     JOIN offre o ON c.id_offre = o.id_offre
+                     JOIN utilisateur u ON c.id_prestataire = u.id_utilisateur
+            WHERE o.id_utilisateur = $1
+            ORDER BY o.date_offre DESC, c.date_postulation DESC;
+        `;
+        const result = await db.query(query, [id_client]);
+        return result.rows;
+    },
+
+    valider: async (id_candidature) => {
+        const query = `
+            UPDATE candidature
+            SET statut = 'VALIDE'
+            WHERE id_candidature = $1 AND statut = 'EN_ATTENTE'
+            RETURNING *;
+        `;
+        const result = await db.query(query, [id_candidature]);
+        return result.rows[0];
+    },
+
+    refuser: async (id_candidature) => {
+        const query = `
+            UPDATE candidature
+            SET statut = 'REFUSE'
+            WHERE id_candidature = $1 AND statut = 'EN_ATTENTE'
+            RETURNING *;
+        `;
+        const result = await db.query(query, [id_candidature]);
+        return result.rows[0];
     }
 };

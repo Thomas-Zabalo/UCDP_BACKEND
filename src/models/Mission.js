@@ -1,17 +1,29 @@
 import db from "../config/db.js";
 
 const Offre = {
-    findAll: async () => {
+    findAll: async (ville = null) => {
+        const values = [];
+        const proximitySort = ville
+            ? `CASE WHEN LOWER(o.localisation) LIKE LOWER($1) THEN 0 ELSE 1 END,`
+            : "";
+
+        if (ville) values.push(`%${ville}%`);
+
         const result = await db.query(
             `SELECT
                  o.*,
-                 to_jsonb(u) AS utilisateur, 
-                 to_jsonb(m) AS metier
+                 to_jsonb(u) AS utilisateur,
+                 to_jsonb(m) AS metier,
+                 EXISTS(
+                     SELECT 1 FROM candidature c
+                     WHERE c.id_offre = o.id_offre AND c.statut = 'VALIDE'
+                 ) AS is_accepted
              FROM offre o
                       LEFT JOIN utilisateur u ON o.id_utilisateur = u.id_utilisateur
                       LEFT JOIN metier m ON o.id_metier = m.id_metier
              WHERE o.statut = false
-             ORDER BY o.date_offre DESC`
+             ORDER BY ${proximitySort} o.date_offre DESC`,
+            values
         );
         return result.rows;
     },

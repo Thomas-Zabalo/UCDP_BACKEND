@@ -39,6 +39,80 @@ export const postulerOffre = async (req, res) => {
     }
 };
 
+export const getCandidaturesClient = async (req, res) => {
+    const id_client = req.user?.id || req.user?.id_utilisateur;
+
+    try {
+        const candidatures = await candidatureModel.getByClient(id_client);
+        res.status(200).json(candidatures);
+    } catch (error) {
+        console.error("Erreur récup candidatures client:", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des candidatures." });
+    }
+};
+
+export const validerCandidature = async (req, res) => {
+    const { id } = req.params;
+    const id_client = req.user?.id || req.user?.id_utilisateur;
+
+    try {
+        const candidature = await candidatureModel.valider(id);
+        if (!candidature) {
+            return res.status(404).json({ message: "Candidature introuvable ou déjà traitée." });
+        }
+
+        const id_prestataire = candidature.id_prestataire;
+
+        // Message automatique du client vers le prestataire
+        const messageAuto = "Félicitations ! Votre candidature a été acceptée. Nous vous contacterons prochainement pour les prochaines étapes.";
+        const savedMessage = await Message.save(messageAuto, id_client, id_prestataire);
+
+        // Notification temps réel au prestataire
+        const io = getIO();
+        if (io) {
+            io.to(`user_${id_prestataire}`).emit("new_message", savedMessage);
+        }
+
+        res.status(200).json({
+            message: "Candidature validée avec succès.",
+            data: candidature
+        });
+
+    } catch (error) {
+        console.error("Erreur validation candidature:", error);
+        res.status(500).json({ message: "Erreur lors de la validation de la candidature." });
+    }
+};
+
+export const refuserCandidature = async (req, res) => {
+    const { id } = req.params;
+    const id_client = req.user?.id || req.user?.id_utilisateur;
+
+    try {
+        const candidature = await candidatureModel.refuser(id);
+        if (!candidature) {
+            return res.status(404).json({ message: "Candidature introuvable ou déjà traitée." });
+        }
+
+        const id_prestataire = candidature.id_prestataire;
+
+        // Message automatique au prestataire
+        const messageAuto = "Nous avons bien examiné votre candidature, mais nous n'y donnons pas suite. Merci de l'intérêt porté à notre annonce.";
+        const savedMessage = await Message.save(messageAuto, id_client, id_prestataire);
+
+        const io = getIO();
+        if (io) {
+            io.to(`user_${id_prestataire}`).emit("new_message", savedMessage);
+        }
+
+        res.status(200).json({ message: "Candidature refusée.", data: candidature });
+
+    } catch (error) {
+        console.error("Erreur refus candidature:", error);
+        res.status(500).json({ message: "Erreur lors du refus de la candidature." });
+    }
+};
+
 export const getMesCandidatures = async (req, res) => {
     // On utilise la même clé que pour la postulation (id ou id_utilisateur)
     const id_prestataire = req.user?.id || req.user?.id_utilisateur;
